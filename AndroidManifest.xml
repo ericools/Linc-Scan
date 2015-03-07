@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
     <application android:label="@string/app_name" android:debuggable="true" android:icon="@drawable/package_editors">
-        <activity android:name=".LincActivity"
+        <activity android:name="ericools.LincScan.LincActivity"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

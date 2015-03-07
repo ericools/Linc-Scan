@@ -47,7 +47,8 @@ public class LincActivity extends Activity {
 	private static HashSet<Integer> allowedSections;
 	private static HashSet<Integer> allowedDepartments;
 	private static HashMap<String, SKUTuple<Integer, Double> > allowedSKUs;
-	
+    private static HashMap<Integer, String[]> departmentPrefixSuffix;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
@@ -56,7 +57,7 @@ public class LincActivity extends Activity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         itemList = new MyStockItemList(this);
         
-        
+
         loadKeyboardSettings();
         
         myEditText = (MyEditText)findViewById(R.id.editText1);
@@ -80,9 +81,12 @@ public class LincActivity extends Activity {
         allowedDepartments = new HashSet<Integer>();
         
         allowedSKUs = new HashMap<String, SKUTuple<Integer, Double> >();
-        
+
+        departmentPrefixSuffix = new HashMap<Integer, String[]>();
+
         loadAllowedValues();
         loadSKUFile();
+        loadDepartmentPrefixSuffix();
     };
     
     public static Context getActivity() {
@@ -229,7 +233,72 @@ public class LincActivity extends Activity {
 			loadKeyboardStandard();
 		}
     }
-    
+
+
+    private void loadDepartmentPrefixSuffix() {
+    	/*
+    	 * Load prefix and suffix for a department as or if specified in department.csv
+    	 */
+        try {
+            File root = Environment.getExternalStorageDirectory();
+            File listappDir = new File(root.toString() + "/LincScanData");
+            listappDir.mkdirs();
+            File readfile = new File(listappDir + "/Department.csv");
+            FileInputStream fis=new FileInputStream(readfile);
+            BufferedInputStream  bis = new BufferedInputStream(fis);
+            DataInputStream dis = new DataInputStream(bis);
+            String aString;
+
+            // csv rows with bad / corrup data
+            ArraySet<String> failedRows = new ArraySet<String>();
+            int rowSrNo;
+
+            while ((aString=dis.readLine()) != null) {
+                rowSrNo++;
+                String[] cols = aString.split(",");
+
+                if(cols.length >= 3) {
+                    departmentPrefixSuffix.put(cols[0], {cols[1], cols[2]});
+                } else {
+                    // something strange happened, we need 3 cols in a csv row
+                    failedRows.add(rowSrNo + ". " + aString)
+                }
+            }
+
+            // do we have any failed rows ? if yes, report to user
+            if(failedRows.length > 0) {
+                showDepartmentPrefixSuffixAlertDialog("Following rows failed to load:\n" + failedRows.join("\n"));
+            }
+
+            fis.close();
+            bis.close();
+            dis.close();
+        } catch (FileNotFoundException e) {
+            // no file, no problem, ignore it.
+            //showDepartmentPrefixSuffixAlertDialog();
+        } catch (IOException e) {
+            showDepartmentPrefixSuffixAlertDialog("Error reading department.csv");
+        }
+    }
+
+    private void showDepartmentPrefixSuffixAlertDialog(String errMsg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+        builder.setTitle("Loading Department Prefix Suffix values");
+
+        builder.setMessage(errMsg)
+                .setCancelable(false)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // TODO: handle the OK
+                    }
+                });
+
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+
     private void loadKeyboardSettings() {
     	/*
     	 * Load keyboard settings from file
