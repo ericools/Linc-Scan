@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menuexport"
+        android:title="Export"
+        android:icon="@drawable/folder_inbox" />
+    <item android:id="@+id/keyboardsettings"
+        android:title="Keyboard settings"
+        android:icon="@drawable/keyboard" />
+    <item android:title="Delete data" android:icon="@drawable/delete" android:id="@+id/deletedata"></item>
+</menu>

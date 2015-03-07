@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+<ScrollView android:id="@+id/frameLayout1" 
+	android:layout_width="fill_parent" 
+	android:layout_height="120dip"
+	android:scrollbarStyle="insideInset"></ScrollView>
+<TextView android:text="" android:id="@+id/textViewEmpty" android:layout_width="wrap_content" android:layout_height="20dip"></TextView>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:stretchColumns="1" android:layout_height="wrap_content" android:weightSum="1.0">
+
+    <TableRow>
+        <TextView android:textSize="15sp" android:text="Area:" android:id="@+id/descArea" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="" android:id="@+id/inputArea" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="Section:" android:id="@+id/descSection" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="" android:id="@+id/inputSection" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+    </TableRow>
+    <TableRow>
+        <TextView android:textSize="15sp" android:text="Department:     " android:id="@+id/descDepartment" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="" android:id="@+id/inputDepartment" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="Category:" android:id="@+id/descCategory" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="" android:id="@+id/inputCategory" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+    </TableRow>
+    <TableRow>
+        <TextView android:textSize="15sp" android:text="SKU:" android:id="@+id/descSKU" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="" android:id="@+id/inputSKU" android:layout_width="0dip" android:layout_weight="0.75" android:layout_height="wrap_content"></TextView>
+    </TableRow>
+    <TableRow>
+        <TextView android:textSize="15sp" android:text="Price:" android:id="@+id/descPrice" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="" android:id="@+id/inputPrice" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="Quantity:" android:id="@+id/descQuantity" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="15sp" android:text="" android:id="@+id/inputQuantity" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+    </TableRow>
+</TableLayout>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:stretchColumns="1" android:layout_height="wrap_content" android:weightSum="1.0">
+    <TableRow>
+      <ericools.LincScan.MyEditText android:layout_height="wrap_content" android:layout_width="0dip" android:layout_weight="0.9" android:id="@+id/editText1" android:text=""></ericools.LincScan.MyEditText>
+      <Button android:text="Scan" android:id="@+id/buttonScan" android:layout_width="0dip" android:layout_weight="0.1" android:layout_height="wrap_content"></Button>
+    </TableRow>
+</TableLayout>    
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:stretchColumns="1" android:layout_height="wrap_content">
+
+    <TableRow>
+        <TextView android:textSize="10sp" android:text="KeyCode:" android:id="@+id/textView1" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="10sp" android:text="" android:id="@+id/textView2" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="10sp" android:text="Totals:" android:id="@+id/textView3" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+        <TextView android:textSize="10sp" android:text="" android:id="@+id/textViewTotals" android:layout_width="0dip" android:layout_weight="0.25" android:layout_height="wrap_content"></TextView>
+    </TableRow>
+</TableLayout>
+
+</LinearLayout>
