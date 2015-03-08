@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 
@@ -14,7 +15,6 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import ericools.LincScan.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -239,46 +239,91 @@ public class LincActivity extends Activity {
     	/*
     	 * Load prefix and suffix for a department as or if specified in department.csv
     	 */
+    	Log.d("LincScan","Starting to load depatt. prefix/suffix values");
         try {
             File root = Environment.getExternalStorageDirectory();
             File listappDir = new File(root.toString() + "/LincScanData");
             listappDir.mkdirs();
-            File readfile = new File(listappDir + "/Department.csv");
+            File readfile = new File(listappDir + "/department.csv");
             FileInputStream fis=new FileInputStream(readfile);
             BufferedInputStream  bis = new BufferedInputStream(fis);
             DataInputStream dis = new DataInputStream(bis);
             String aString;
 
             // csv rows with bad / corrup data
-            ArraySet<String> failedRows = new ArraySet<String>();
-            int rowSrNo;
+            StringBuilder failedRows = new StringBuilder();
+            int rowSrNo = 0;
 
+            Log.d("LincScan", "department.csv found. reading rows one by one...");
+            
             while ((aString=dis.readLine()) != null) {
                 rowSrNo++;
-                String[] cols = aString.split(",");
+                
+                Log.d("LincScan", "Row " + rowSrNo + " : " + aString);
+                String[] parts = aString.split(",");
+                
+                int departmentId = 0;
+                String prefix = "";
+                String suffix = "";
+                
+                if(parts.length >= 2) {
+                	try {
+                		// get departmentID
+                		departmentId = Integer.parseInt(parts[0]);
+                		
+                		// get prefix
+                		prefix = parts[1];
 
-                if(cols.length >= 3) {
-                    departmentPrefixSuffix.put(cols[0], {cols[1], cols[2]});
+                		// optional, get suffix
+                		if(parts.length >= 3) {
+                			suffix = parts[2];
+                		}
+                		
+                		departmentPrefixSuffix.put(
+            				departmentId, 
+            				new String[]{prefix, suffix}
+                		);
+                		
+                		Log.d("LincScan", "row " + rowSrNo + ": parsed successfully!");
+                		                		
+                	} catch (Exception e) {
+                		// numberformat exception: 1st col should be a number. found text.
+                		addFailedRow(failedRows, rowSrNo, aString, "1st Col Type Found: Text. Required: Number.");
+                        Log.d("LincScan", "row parsing failed : number format exception. 1st col has non-integer value");
+                	}                	
                 } else {
-                    // something strange happened, we need 3 cols in a csv row
-                    failedRows.add(rowSrNo + ". " + aString)
+                    // the row has less than 2 cols, we require minimum 2 cols in a csv row
+                    addFailedRow(failedRows, rowSrNo, aString, "Found cols: " + parts.length + ". Min. Required: 2.");
+                    Log.d("LincScan", "row parsing failed : csv row should have at least 2 cols.");
                 }
             }
 
             // do we have any failed rows ? if yes, report to user
-            if(failedRows.length > 0) {
-                showDepartmentPrefixSuffixAlertDialog("Following rows failed to load:\n" + failedRows.join("\n"));
+            if(failedRows.length() > 0) {
+            	Log.d("LincScan", "We have failed rows. Must show AlertDialog for the same.");
+                showDepartmentPrefixSuffixAlertDialog("Following rows failed to load:\n" +  failedRows.toString());
             }
-
+            
             fis.close();
             bis.close();
             dis.close();
         } catch (FileNotFoundException e) {
             // no file, no problem, ignore it.
             //showDepartmentPrefixSuffixAlertDialog();
+        	Log.d("LincScan","No department.csv found... No prefix/suffix values loaded.");
         } catch (IOException e) {
+        	Log.d("LincScan", "department.csv found... but not readable... must show a AlertDialog");
             showDepartmentPrefixSuffixAlertDialog("Error reading department.csv");
         }
+    }
+    
+    private void addFailedRow(StringBuilder sb, int rowSrNo, String row, String errorMsg) {
+    	sb.append(rowSrNo);
+        sb.append(". ");
+        sb.append(row);
+        sb.append(" : ");
+        sb.append(errorMsg);
+        sb.append("\n");
     }
 
     private void showDepartmentPrefixSuffixAlertDialog(String errMsg) {
@@ -443,6 +488,39 @@ public class LincActivity extends Activity {
         return true;
     }
     
+    private void applyDepartmentPrefixSuffix(String contents) {
+    	TextView inputDept = (TextView)findViewById(R.id.inputDepartment);
+    	TextView inputSku = (TextView)findViewById(R.id.inputSKU);
+    	String prefix, suffix, sku;
+    	String[] item;
+    	
+    	Log.d("LincScan", "Applying prefix/suffix to SKU, if applicable, as per the Department.");
+    	try {
+    		int deptId = Integer.parseInt(inputDept.getText().toString());
+    		
+    		if(departmentPrefixSuffix.containsKey(deptId)) {
+    			Log.d("LincScan", "Yep, We have prefix/suffix value(s) for department: " + deptId);
+    		
+    			item = departmentPrefixSuffix.get(deptId);
+    			prefix = item[0];
+    			suffix = item[1];
+    			sku = prefix + contents + suffix;
+    			inputSku.setText(sku);
+    		
+    			Log.d("LincScan", "Prefix/Suffix applied to SKU as - preifx: " + prefix + ", barcode: " + contents + ", suffix: " + suffix);
+    			   		
+    		} else {
+    			Log.d("LincScan", "No prefix/suffix value(s) found for department: " + deptId);    			
+    		};
+    		
+    	} catch (Exception e) {
+    		// departmentId should be a number, but found text
+    		String errorMsg = "DepartmentID should be Number. Found text. Not applying any prefix/suffix."; 
+            Log.d("LincScan", errorMsg);
+    		showDepartmentPrefixSuffixAlertDialog(errorMsg);
+    	}
+    }
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     	/*
@@ -455,7 +533,9 @@ public class LincActivity extends Activity {
            String contents = result.getContents();
            if (contents != null) {
         	   MyEditText et = (MyEditText)findViewById(R.id.editText1);
-        	   et.setText(result.getContents());
+        	   // et.setText(result.getContents());
+        	   et.setText(contents);
+        	   applyDepartmentPrefixSuffix(contents);
            }
          }
     	}
