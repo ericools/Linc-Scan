@@ -487,6 +487,10 @@ public class LincActivity extends Activity {
         }
         return true;
     }
+
+    public static boolean isDepartmentPrefixSuffixValuesLoaded() {
+        return (! departmentPrefixSuffix.isEmpty());
+    }
     
     private void applyDepartmentPrefixSuffix(String contents) {
     	TextView inputDept = (TextView)findViewById(R.id.inputDepartment);

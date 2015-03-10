@@ -190,7 +190,19 @@ public class MyStockItem {
 					} else {
 						if (override) {
 							stockItemValues.set(counter, input);
-							stockItemValues.set(2,"0");
+
+                            // If there is no 'department.csv' present and loaded...
+                            // which means no department prefix/suffix values loaded.
+                            // hence there is no need for department and it should be set to 0
+                            // But if the file exits and successfully parsed, we need department value,
+                            // hence don't touch it and let the user fill it, like other values.
+                            if(LincActivity.isDepartmentPrefixSuffixValuesLoaded()) {
+                                Log.d("MyStockItem","Dept. prefix/suffix values are loaded... hence dept. will be left untouched.");
+                            } else {
+                                Log.d("MyStockItem","Dept. prefix/suffix values NOT loaded... hence dept. will be set to 0.");
+                                stockItemValues.set(2,"0");
+                            }
+
 							stockItemValues.set(4,"");
 							return true;
 						} else {
@@ -210,18 +222,18 @@ public class MyStockItem {
 			}
 			else
 			{
-				try
-				{
-					int newvalue=this.quantity+Integer.parseInt(input);
-					this.quantity=newvalue;
-					stockItemValues.set(5,Integer.valueOf(newvalue).toString());
-				}
-				catch (NumberFormatException e)
-				{
-					Log.i("LincScan", "entered number not integer");
-				}
-			}
-		}
+                try
+                {
+                    int newvalue=this.quantity+Integer.parseInt(input);
+                    this.quantity=newvalue;
+                    stockItemValues.set(5,Integer.valueOf(newvalue).toString());
+                } 
+                catch (NumberFormatException e) 
+                { 
+                    Log.i("LincScan", "entered number not integer"); 
+                }
+            }
+        }
 		return true;
 	}
 	

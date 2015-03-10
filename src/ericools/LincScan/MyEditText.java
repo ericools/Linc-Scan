@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.format.Time;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.EditText;
 import android.widget.TextView;
