@@ -1,11 +1,17 @@
-This directory is for testing during development.
+Presets
+=======
+
+This directory hosts various presets.
+
 In production, this directory is supposed to be present on external storage,
 which usually is external sd card.
+
+It is provided here for reference and testing during development.
 
 Following files are supposed to be present in this directory,
 which will alter the behaviour of this application.
 
-1. department.csv (comma seperated values) for prefix/suffix feature.
+* department.csv (comma seperated values) for prefix/suffix feature.
    - 1st col should be numeric eg. 14
    - 2nd col will be parsed as prefix.
    - 3rd col will be parsed as suffix.
