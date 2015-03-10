@@ -58,8 +58,16 @@ public class MyStockItem {
 	public void selectNextField() {
 		if (counter==1)
 		{
-			// jump right to SKU after section
-			setCurrentFieldNumber(8);
+			// jump right to SKU after section, only if
+            // there is no department prefix/suffix values loaded
+            // to skip department field will be autofilled to 0 then
+            if(! LincActivity.isDepartmentPrefixSuffixValuesLoaded()) {
+                Log.d("MyStockItem","Skipping department field, as there are no department prefix/suffix values loaded...");
+			    setCurrentFieldNumber(8);
+            } else {
+                Log.d("MyStockItem", "NOT skipping department field as department prefix/suffix FOUND loaded!");
+				setCurrentFieldNumber(counter+1);
+            }
 		}
 		else { 
 			if (counter==8) {
