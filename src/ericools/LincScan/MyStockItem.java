@@ -22,13 +22,23 @@ public class MyStockItem {
 	private ArrayList<String> stockItemValues;
 	private int counter;
 	
+    public static final int ENTRY_AREA      = 0;
+    public static final int ENTRY_SECTION   = 1;
+    public static final int ENTRY_DEPARTMENT = 2;
+    public static final int ENTRY_CATEGORY  = 3;
+    public static final int ENTRY_PRICE     = 4;
+    public static final int ENTRY_QUATITY   = 5;
+    public static final int ENTRY_USER      = 6;
+    public static final int ENTRY_TIMESTAMP = 7;
+    public static final int ENTRY_SKU       = 8;
+
 	public static String[] entryCaptions = {"Area","Section","Department","Category","Price","Quantity","User","Timestamp","SKU"};
 	
 	public long dbId;
 	
 	public MyStockItem(){
 		stockItemValues=new ArrayList<String>();
-		for (int i=0;i<9;++i)
+		for (int i=MyStockItem.ENTRY_AREA; i < MyStockItem.ENTRY_SKU+1; ++i)
 		{
 			/*
 			 * 0 : Area
@@ -43,63 +53,77 @@ public class MyStockItem {
 			 */
 			stockItemValues.add("");
 		}
-		stockItemValues.set(3, "0000");
-		stockItemValues.set(5, "0");
-		stockItemValues.set(6, "0000");
+		stockItemValues.set(MyStockItem.ENTRY_CATEGORY, "0000");
+		stockItemValues.set(MyStockItem.ENTRY_QUATITY, "0");
+		stockItemValues.set(MyStockItem.ENTRY_USER, "0000");
 		counter=0;
 		quantity=0;
 		dbId=-1;
 	}
 	
 	public void setTimestamp(String times) {
-		stockItemValues.set(7,times);
+		stockItemValues.set(MyStockItem.ENTRY_TIMESTAMP, times);
 	}
 	
 	public void selectNextField() {
-		if (counter==1)
-		{
-			// jump right to SKU after section, only if
-            // there is no department prefix/suffix values loaded
-            // to skip department field will be autofilled to 0 then
-            if(! LincActivity.isDepartmentPrefixSuffixValuesLoaded()) {
-                Log.d("MyStockItem","Skipping department field, as there are no department prefix/suffix values loaded...");
-			    setCurrentFieldNumber(8);
-            } else {
-                Log.d("MyStockItem", "NOT skipping department field as department prefix/suffix FOUND loaded!");
-				setCurrentFieldNumber(counter+1);
-            }
-		}
-		else { 
-			if (counter==8) {
-				// jump to price after SKU
-				setCurrentFieldNumber(4);
-			}
-			else {
-				setCurrentFieldNumber(counter+1);
-			}
-		}
+        Log.d("MyStockItem::selectNextField", "Counter: " + counter);
+        switch(counter) {
+            case MyStockItem.ENTRY_SECTION:
+                // from SKU:
+                // - goto department, if department prefix/suffix values are loaded
+                // - else, jump to SKU 
+                if(LincActivity.isDepartmentPrefixSuffixValuesLoaded()) {
+                    setCurrentFieldNumber(MyStockItem.ENTRY_DEPARTMENT);
+                } else {
+                    setCurrentFieldNumber(MyStockItem.ENTRY_SKU);
+                }
+            break;
+
+            case MyStockItem.ENTRY_DEPARTMENT:
+                // jump to SKU after Department
+                Log.d("MyStockItem::selectNextField", 
+                      "On Department jumping to SKU");
+                setCurrentFieldNumber(MyStockItem.ENTRY_SKU);
+            break;
+
+            case MyStockItem.ENTRY_SKU:
+                // jump to price after SKU
+                setCurrentFieldNumber(MyStockItem.ENTRY_PRICE);
+            break;
+
+            default:
+                setCurrentFieldNumber(counter+1);
+        }
 	}
 
 	public void selectPreviousField() {
-		if (counter==8)
-		{
-			// go back to Section after SKU
-			setCurrentFieldNumber(1);
-		}
-		else {
-			if (counter==4) {
-				// go back to SKU after price
-				setCurrentFieldNumber(8);
-			}
-			else {
+        switch(counter) {
+            case MyStockItem.ENTRY_SKU:
+                // from SKU:
+                // - go back to department, if prefix/suffix values loaded,
+                // - else go back to section 
+                if(LincActivity.isDepartmentPrefixSuffixValuesLoaded()) {
+                    setCurrentFieldNumber(MyStockItem.ENTRY_DEPARTMENT);
+                } else {
+                    setCurrentFieldNumber(MyStockItem.ENTRY_SECTION);
+                }
+                break;
+
+            case MyStockItem.ENTRY_PRICE:
+                // go back to SKU after price
+                setCurrentFieldNumber(MyStockItem.ENTRY_SKU);
+                break;
+
+            default:
 				setCurrentFieldNumber(counter-1);
-			}
-		}
+        }
 	}
 	
 	public void setCurrentFieldNumber(int number)
 	{
-		if (number>-1 && (number<6 || number==8)) {
+        Log.d("MyStockItem::setCurrentFieldNumber", 
+              "Request received to set current field number to: " + number);
+		if (number>-1 && (number < MyStockItem.ENTRY_USER || number == MyStockItem.ENTRY_SKU)) {
 			counter=number;
 		}
 	}
@@ -114,7 +138,7 @@ public class MyStockItem {
 	}
 	
 	public void clearCurrentField() {
-		if (counter<5 || counter==8)
+		if (counter < MyStockItem.ENTRY_QUATITY || counter == MyStockItem.ENTRY_SKU)
 		{
 			stockItemValues.set(counter, "");
 		}
@@ -158,12 +182,18 @@ public class MyStockItem {
 	}
 	
 	public boolean setCurrentField(final String input, boolean override){
+        Log.d("MyStockItem::setCurrentField",
+              "Request to set current" +
+              " field: " + counter + 
+              " to: " + input +
+              " with override: " + override);
+
 		if (input != null && input.length()>0)
 		{
-			if (counter<4 || counter==8)
+			if (counter < MyStockItem.ENTRY_PRICE || counter == MyStockItem.ENTRY_SKU)
 			{
 				switch (counter) {
-				case 0:
+				case MyStockItem.ENTRY_AREA:
 					if (LincActivity.getAllowedAreas().contains(Integer.valueOf(input))) {
 						stockItemValues.set(counter, input);
 					} else {
@@ -175,8 +205,10 @@ public class MyStockItem {
 							return false;
 						}
 					}
+
 					break;
-				case 1:
+
+				case MyStockItem.ENTRY_SECTION:
 					if (LincActivity.getAllowedSections().contains(Integer.valueOf(input))) {
 						stockItemValues.set(counter, input);
 					} else {
@@ -188,12 +220,27 @@ public class MyStockItem {
 							return false;
 						}
 					}
+
 					break;
-				case 8:
+
+                case MyStockItem.ENTRY_DEPARTMENT: 
+                    Log.d("MyStockItem::setCurrentField",
+                          "Entering input into department field and then moving to SKU field.");
+                    stockItemValues.set(counter, input);
+                    //selectNextField();
+                    break;
+
+				case MyStockItem.ENTRY_SKU:
 					if (LincActivity.getAllowedSKUs().containsKey(input)) {
 						stockItemValues.set(counter, input);
-						stockItemValues.set(2,LincActivity.getAllowedSKUs().get(input).x.toString());
-						stockItemValues.set(4,LincActivity.getAllowedSKUs().get(input).y.toString());
+						stockItemValues.set(
+                                MyStockItem.ENTRY_DEPARTMENT, 
+                                LincActivity.getAllowedSKUs().get(input).x.toString()
+                                );
+						stockItemValues.set(
+                                MyStockItem.ENTRY_PRICE, 
+                                LincActivity.getAllowedSKUs().get(input).y.toString()
+                                );
 						selectNextField(); // skip one field more (price field)
 					} else {
 						if (override) {
@@ -205,20 +252,24 @@ public class MyStockItem {
                             // But if the file exits and successfully parsed, we need department value,
                             // hence don't touch it and let the user fill it, like other values.
                             if(LincActivity.isDepartmentPrefixSuffixValuesLoaded()) {
-                                Log.d("MyStockItem","Dept. prefix/suffix values are loaded... hence dept. will be left untouched.");
+                                Log.d("MyStockItem","Dept. prefix/suffix values are loaded... " +
+                                      "hence dept. will be left untouched.");
                             } else {
-                                Log.d("MyStockItem","Dept. prefix/suffix values NOT loaded... hence dept. will be set to 0.");
-                                stockItemValues.set(2,"0");
+                                Log.d("MyStockItem","Dept. prefix/suffix values NOT loaded... " + 
+                                      "hence dept. will be set to 0.");
+                                stockItemValues.set(MyStockItem.ENTRY_DEPARTMENT, "0");
                             }
 
-							stockItemValues.set(4,"");
+							stockItemValues.set(MyStockItem.ENTRY_PRICE, "");
 							return true;
 						} else {
 							showAcceptDialog(input);
 							return false;
 						}
 					}
+
 					break;
+
 				default:
 					stockItemValues.set(counter, input);
 				}
