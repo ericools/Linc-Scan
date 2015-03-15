@@ -47,7 +47,7 @@ public class LincActivity extends Activity {
 	private static HashSet<Integer> allowedSections;
 	private static HashSet<Integer> allowedDepartments;
 	private static HashMap<String, SKUTuple<Integer, Double> > allowedSKUs;
-    private static HashMap<Integer, String[]> departmentPrefixSuffix;
+    public static HashMap<String, String[]> departmentPrefixSuffix;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public class LincActivity extends Activity {
         
         allowedSKUs = new HashMap<String, SKUTuple<Integer, Double> >();
 
-        departmentPrefixSuffix = new HashMap<Integer, String[]>();
+        LincActivity.departmentPrefixSuffix = new HashMap<String, String[]>();
 
         loadAllowedValues();
         loadSKUFile();
@@ -262,14 +262,13 @@ public class LincActivity extends Activity {
                 Log.d("LincScan", "Row " + rowSrNo + " : " + aString);
                 String[] parts = aString.split(",");
                 
-                int departmentId = 0;
                 String prefix = "";
                 String suffix = "";
                 
                 if(parts.length >= 2) {
                 	try {
                 		// get departmentID
-                		departmentId = Integer.parseInt(parts[0]);
+                		String departmentId = parts[0]; //Integer.parseInt(parts[0]);
                 		
                 		// get prefix
                 		prefix = parts[1];
@@ -279,7 +278,7 @@ public class LincActivity extends Activity {
                 			suffix = parts[2];
                 		}
                 		
-                		departmentPrefixSuffix.put(
+                		LincActivity.departmentPrefixSuffix.put(
             				departmentId, 
             				new String[]{prefix, suffix}
                 		);
@@ -288,8 +287,9 @@ public class LincActivity extends Activity {
                 		                		
                 	} catch (Exception e) {
                 		// numberformat exception: 1st col should be a number. found text.
-                		addFailedRow(failedRows, rowSrNo, aString, "1st Col Type Found: Text. Required: Number.");
-                        Log.d("LincScan", "row parsing failed : number format exception. 1st col has non-integer value");
+                        String errMsg = rowSrNo + " row parsing failed. Exception: " + e;
+                		addFailedRow(failedRows, rowSrNo, aString, errMsg);
+                        Log.d("LincScan", errMsg);
                 	}                	
                 } else {
                     // the row has less than 2 cols, we require minimum 2 cols in a csv row
@@ -301,7 +301,7 @@ public class LincActivity extends Activity {
             // do we have any failed rows ? if yes, report to user
             if(failedRows.length() > 0) {
             	Log.d("LincScan", "We have failed rows. Must show AlertDialog for the same.");
-                showDepartmentPrefixSuffixAlertDialog("Following rows failed to load:\n" +  failedRows.toString());
+                LincActivity.showDepartmentPrefixSuffixAlertDialog("Following rows failed to load:\n" +  failedRows.toString());
             }
             
             fis.close();
@@ -309,11 +309,11 @@ public class LincActivity extends Activity {
             dis.close();
         } catch (FileNotFoundException e) {
             // no file, no problem, ignore it.
-            //showDepartmentPrefixSuffixAlertDialog();
+            //LincActivity.showDepartmentPrefixSuffixAlertDialog();
         	Log.d("LincScan","No department.csv found... No prefix/suffix values loaded.");
         } catch (IOException e) {
         	Log.d("LincScan", "department.csv found... but not readable... must show a AlertDialog");
-            showDepartmentPrefixSuffixAlertDialog("Error reading department.csv");
+            LincActivity.showDepartmentPrefixSuffixAlertDialog("Error reading department.csv");
         }
     }
     
@@ -326,10 +326,10 @@ public class LincActivity extends Activity {
         sb.append("\n");
     }
 
-    private void showDepartmentPrefixSuffixAlertDialog(String errMsg) {
+    public static void showDepartmentPrefixSuffixAlertDialog(String errMsg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
-        builder.setTitle("Loading Department Prefix Suffix values");
+        builder.setTitle("Department Prefix Suffix values");
 
         builder.setMessage(errMsg)
                 .setCancelable(false)
@@ -489,42 +489,9 @@ public class LincActivity extends Activity {
     }
 
     public static boolean isDepartmentPrefixSuffixValuesLoaded() {
-        return (! departmentPrefixSuffix.isEmpty());
+        return (! LincActivity.departmentPrefixSuffix.isEmpty());
     }
-    
-    private void applyDepartmentPrefixSuffix(String contents) {
-    	TextView inputDept = (TextView)findViewById(R.id.inputDepartment);
-    	TextView inputSku = (TextView)findViewById(R.id.inputSKU);
-    	String prefix, suffix, sku;
-    	String[] item;
-    	
-    	Log.d("LincScan", "Applying prefix/suffix to SKU, if applicable, as per the Department.");
-    	try {
-    		int deptId = Integer.parseInt(inputDept.getText().toString());
-    		
-    		if(departmentPrefixSuffix.containsKey(deptId)) {
-    			Log.d("LincScan", "Yep, We have prefix/suffix value(s) for department: " + deptId);
-    		
-    			item = departmentPrefixSuffix.get(deptId);
-    			prefix = item[0];
-    			suffix = item[1];
-    			sku = prefix + contents + suffix;
-    			inputSku.setText(sku);
-    		
-    			Log.d("LincScan", "Prefix/Suffix applied to SKU as - preifx: " + prefix + ", barcode: " + contents + ", suffix: " + suffix);
-    			   		
-    		} else {
-    			Log.d("LincScan", "No prefix/suffix value(s) found for department: " + deptId);    			
-    		};
-    		
-    	} catch (Exception e) {
-    		// departmentId should be a number, but found text
-    		String errorMsg = "DepartmentID should be Number. Found text. Not applying any prefix/suffix."; 
-            Log.d("LincScan", errorMsg);
-    		showDepartmentPrefixSuffixAlertDialog(errorMsg);
-    	}
-    }
-    
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     	/*
@@ -537,9 +504,7 @@ public class LincActivity extends Activity {
            String contents = result.getContents();
            if (contents != null) {
         	   MyEditText et = (MyEditText)findViewById(R.id.editText1);
-        	   // et.setText(result.getContents());
-        	   et.setText(contents);
-        	   applyDepartmentPrefixSuffix(contents);
+        	   et.setText(result.getContents());
            }
          }
     	}

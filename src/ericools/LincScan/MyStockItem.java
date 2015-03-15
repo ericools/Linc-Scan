@@ -31,14 +31,16 @@ public class MyStockItem {
     public static final int ENTRY_USER      = 6;
     public static final int ENTRY_TIMESTAMP = 7;
     public static final int ENTRY_SKU       = 8;
+    public static final int ENTRY_PREFIX = 9;
+    public static final int ENTRY_SUFFIX = 10;
 
-	public static String[] entryCaptions = {"Area","Section","Department","Category","Price","Quantity","User","Timestamp","SKU"};
+	public static String[] entryCaptions = {"Area","Section","Department","Category","Price","Quantity","User","Timestamp","SKU", "Prefix","Suffix"};
 	
 	public long dbId;
 	
 	public MyStockItem(){
 		stockItemValues=new ArrayList<String>();
-		for (int i=MyStockItem.ENTRY_AREA; i < MyStockItem.ENTRY_SKU+1; ++i)
+		for (int i=MyStockItem.ENTRY_AREA; i < MyStockItem.ENTRY_SUFFIX+1; ++i)
 		{
 			/*
 			 * 0 : Area
@@ -50,6 +52,8 @@ public class MyStockItem {
 			 * 6 : User
 			 * 7 : Timestamp
 			 * 8 : SKU
+			 * 9 : Prefix 
+			 * 10 : Suffix 
 			 */
 			stockItemValues.add("");
 		}
@@ -227,6 +231,8 @@ public class MyStockItem {
                     Log.d("MyStockItem::setCurrentField",
                           "Entering input into department field and then moving to SKU field.");
                     stockItemValues.set(counter, input);
+                    // department field updated...also check for prefix/suffix
+                    applyDepartmentPrefixSuffix();
                     //selectNextField();
                     break;
 
@@ -306,4 +312,30 @@ public class MyStockItem {
     		this.stockItemValues.set(index, str);
 		}
     }
+
+    // reads current department value 
+    // checks if some prefix/suffix value exists for this department in presets
+    // if yes sets prefix/suffix to relevant fields
+    private void applyDepartmentPrefixSuffix() {
+    	String[] item;
+        String dept = getStockItemValue(MyStockItem.ENTRY_DEPARTMENT);
+
+    	Log.d("LincScan", "Applying prefix/suffix to SKU, if applicable, as per the Department.");
+
+        if(LincActivity.departmentPrefixSuffix.containsKey(dept)) {
+            Log.d("LincScan", "Yep, We have prefix/suffix value(s) for department: " + dept);
+
+            item = LincActivity.departmentPrefixSuffix.get(dept);
+            stockItemValues.set(MyStockItem.ENTRY_PREFIX, item[0]);
+            stockItemValues.set(MyStockItem.ENTRY_SUFFIX, item[1]);
+
+            Log.d("LincScan", "Prefix/Suffix field set as - preifx: " + getStockItemValue(MyStockItem.ENTRY_PREFIX) + 
+                                                         ", suffix: " + getStockItemValue(MyStockItem.ENTRY_SUFFIX));
+        } else {
+            stockItemValues.set(MyStockItem.ENTRY_PREFIX, "");
+            stockItemValues.set(MyStockItem.ENTRY_SUFFIX, "");
+            Log.d("LincScan", "No prefix/suffix value(s) found for department: " + dept);    			
+        };
+    }
+
 }
