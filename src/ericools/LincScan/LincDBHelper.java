@@ -19,7 +19,9 @@ public class LincDBHelper extends SQLiteOpenHelper {
 			+ "quantity text not null, " 
 			+ "user text not null, " 
 			+ "timestamp text not null, "
-			+ "sku text not null);";
+			+ "sku text not null, "
+			+ "prefix text not null, "
+			+ "suffix text not null);";
 
 	public LincDBHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);

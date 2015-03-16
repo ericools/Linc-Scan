@@ -174,6 +174,29 @@ public class MyStockItemList {
     	deleteFile("LincScanDataBackup", "autosave_backup_memory.csv");
 	}
 	
+    private void writeCSVRow(Cursor dbEntries, BufferedWriter out) throws IOException {
+        for (int i=1;i<10;++i) { // do not write the dbId!
+
+            // sku field will get a special treatment here
+            String col;
+            if(i==9) {
+                String prefix = dbEntries.getString(10);
+                String sku = dbEntries.getString(9);
+                String suffix = dbEntries.getString(11);
+                col =  prefix + sku + suffix;
+            } else {
+                col = dbEntries.getString(i);
+            }
+            
+            out.write(col);
+
+            if (i<9) {
+                out.write(",");
+            }
+        }
+        out.write("\n");
+    }
+
 	private void saveFromDBToCSV(String directory, String filename) {
 			try {
 			    File root = Environment.getExternalStorageDirectory();
@@ -187,24 +210,10 @@ public class MyStockItemList {
 			        Cursor allDBEntries=dbAdapter.fetchAllEntries();
 					if (allDBEntries.getCount()>0) {	
 						if (allDBEntries.moveToFirst()) {
-							for (int i=1;i<10;++i) { // do not write the dbId!
-								out.write(allDBEntries.getString(i));
-									if (i<9)
-					        		{
-					        			out.write(",");
-					        		}
-								}
-							out.write("\n");
+                            writeCSVRow(allDBEntries, out);
 						}
 						while (allDBEntries.moveToNext()) {
-							for (int i=1;i<10;++i) {
-								out.write(allDBEntries.getString(i));
-									if (i<9)
-					        		{
-					        			out.write(",");
-					        		}
-								}
-							out.write("\n");
+                            writeCSVRow(allDBEntries, out);
 						}
 					}
 			        out.close();
@@ -341,12 +350,29 @@ public class MyStockItemList {
 	}
 	
 	public Double getTotals(MyStockItem item) {
-		return Double.valueOf(dbAdapter.getTotals(item.getStockItemValue(0), item.getStockItemValue(1), item.getStockItemValue(2)));
+		return Double.valueOf(
+                dbAdapter.getTotals(
+                    item.getStockItemValue(0), 
+                    item.getStockItemValue(1), 
+                    item.getStockItemValue(2)
+                )
+            );
 	}
 	
-	public void addMyStockItem(MyStockItem item) {
-		
-		item.dbId=dbAdapter.createEntry(item.getStockItemValue(0),item.getStockItemValue(1),item.getStockItemValue(2),item.getStockItemValue(3),item.getStockItemValue(4),item.getStockItemValue(5),item.getStockItemValue(6),item.getStockItemValue(7),item.getStockItemValue(8));
+	public void addMyStockItem(MyStockItem item) { 
+		item.dbId = dbAdapter.createEntry(
+            item.getStockItemValue(MyStockItem.ENTRY_AREA),
+            item.getStockItemValue(MyStockItem.ENTRY_SECTION),
+            item.getStockItemValue(MyStockItem.ENTRY_DEPARTMENT),
+            item.getStockItemValue(MyStockItem.ENTRY_CATEGORY),
+            item.getStockItemValue(MyStockItem.ENTRY_PRICE),
+            item.getStockItemValue(MyStockItem.ENTRY_QUATITY),
+            item.getStockItemValue(MyStockItem.ENTRY_USER),
+            item.getStockItemValue(MyStockItem.ENTRY_TIMESTAMP),
+            item.getStockItemValue(MyStockItem.ENTRY_SKU),
+            item.getStockItemValue(MyStockItem.ENTRY_PREFIX),
+            item.getStockItemValue(MyStockItem.ENTRY_SUFFIX)
+        );
 		
 		addItemToMemory(item);
 		autoSave();
@@ -412,16 +438,32 @@ public class MyStockItemList {
 			TextView currentView=(TextView)currentRow.getChildAt(i);
 			int textpos=i;
 			if (i>2) {textpos++;} // this is because of missing "Category"
-			currentView.setText(stockItems.get(index).getStockItemValue(textpos));
+			currentView.setText(
+                stockItems.get(index).getStockItemValue(textpos)
+            );
 		}
 		Time timest = new Time();
 		timest.setToNow();
 		stockItems.get(index).setTimestamp(timest.format2445());
 		MyStockItem item=stockItems.get(index);
 		
-		dbAdapter.updateEntry(item.dbId, item.getStockItemValue(0),item.getStockItemValue(1),item.getStockItemValue(2),item.getStockItemValue(3),item.getStockItemValue(4),item.getStockItemValue(5),item.getStockItemValue(6),item.getStockItemValue(7),item.getStockItemValue(8));
+		dbAdapter.updateEntry(
+            item.dbId, 
+            item.getStockItemValue(MyStockItem.ENTRY_AREA),
+            item.getStockItemValue(MyStockItem.ENTRY_SECTION),
+            item.getStockItemValue(MyStockItem.ENTRY_DEPARTMENT),
+            item.getStockItemValue(MyStockItem.ENTRY_CATEGORY),
+            item.getStockItemValue(MyStockItem.ENTRY_PRICE),
+            item.getStockItemValue(MyStockItem.ENTRY_QUATITY),
+            item.getStockItemValue(MyStockItem.ENTRY_USER),
+            item.getStockItemValue(MyStockItem.ENTRY_TIMESTAMP),
+            item.getStockItemValue(MyStockItem.ENTRY_SKU),
+            item.getStockItemValue(MyStockItem.ENTRY_PREFIX),
+            item.getStockItemValue(MyStockItem.ENTRY_SUFFIX)
+        );
 		
-		selectNewPosition(currentSelection); // to get the color back to standard selection color
+        // to get the color back to standard selection color
+		selectNewPosition(currentSelection); 
 		autoSave();
 	}
 	

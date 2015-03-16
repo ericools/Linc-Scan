@@ -18,7 +18,11 @@ public class LincDBAdapter {
 	public static final String KEY_USER = "user";
 	public static final String KEY_TIMESTAMP = "timestamp";
 	public static final String KEY_SKU = "sku";
+	public static final String KEY_PREFIX = "prefix";
+	public static final String KEY_SUFFIX = "suffix";
+
 	private static final String DATABASE_TABLE = "inventory_entries";
+
 	private Context context;
 	private SQLiteDatabase database;
 	private LincDBHelper dbHelper;
@@ -37,17 +41,51 @@ public class LincDBAdapter {
 		dbHelper.close();
 	}
 
-	public long createEntry(String area, String section, String department, String category, String price, String quantity, String user, String timestamp, String sku) {
-		ContentValues initialValues = createContentValues(area, section, department, category, price, quantity, user, timestamp, sku);
-
-		return database.insert(DATABASE_TABLE, null, initialValues);
+	public long createEntry(
+        String area, 
+        String section, 
+        String department, 
+        String category, 
+        String price, 
+        String quantity, 
+        String user, 
+        String timestamp, 
+        String sku,
+        String prefix,
+        String suffix
+        ) {
+		    ContentValues initialValues = createContentValues(area, section, department, category, price, quantity, user, timestamp, sku, prefix, suffix);
+		    return database.insert(DATABASE_TABLE, null, initialValues);
 	}
 
-	public boolean updateEntry(long rowId, String area, String section, String department, String category, String price, String quantity, String user, String timestamp, String sku) {
-		ContentValues updateValues = createContentValues(area, section, department, category, price, quantity, user, timestamp, sku);
-
-		return database.update(DATABASE_TABLE, updateValues, KEY_ROWID + "="
-				+ rowId, null) > 0;
+	public boolean updateEntry(
+        long rowId, 
+        String area, 
+        String section, 
+        String department, 
+        String category, 
+        String price, 
+        String quantity,
+        String user, 
+        String timestamp, 
+        String sku,
+        String prefix,
+        String suffix
+        ) {
+		    ContentValues updateValues = createContentValues(
+                area, 
+                section, 
+                department, 
+                category, 
+                price, 
+                quantity, 
+                user, 
+                timestamp, 
+                sku, 
+                prefix, 
+                suffix
+            );
+		    return database.update(DATABASE_TABLE, updateValues, KEY_ROWID + "=" + rowId, null) > 0;
 	}
 
 	public boolean deleteAllEntries() {
@@ -59,9 +97,22 @@ public class LincDBAdapter {
 	}
 
 	public Cursor fetchAllEntries() {
-		return database.query(DATABASE_TABLE, new String[] { KEY_ROWID,
-				KEY_AREA, KEY_SECTION, KEY_DEPARTMENT, KEY_CATEGORY, KEY_PRICE, KEY_QUANTITY, KEY_USER, KEY_TIMESTAMP, KEY_SKU }, null, null, null,
-				null, null);
+		return database.query(
+            DATABASE_TABLE, 
+            new String[] { 
+                KEY_ROWID,
+                KEY_AREA, 
+                KEY_SECTION, 
+                KEY_DEPARTMENT, 
+                KEY_CATEGORY, 
+                KEY_PRICE, 
+                KEY_QUANTITY, 
+                KEY_USER, 
+                KEY_TIMESTAMP, 
+                KEY_SKU,
+                KEY_PREFIX,
+                KEY_SUFFIX
+            }, null, null, null, null, null);
 	}
 	
 	public double getTotals(String area, String section, String department) {
@@ -76,17 +127,49 @@ public class LincDBAdapter {
 	}
 
 	public Cursor fetchEntry(long rowId) throws SQLException {
-		Cursor mCursor = database.query(true, DATABASE_TABLE, new String[] {
-				KEY_ROWID, KEY_AREA, KEY_SECTION, KEY_DEPARTMENT, KEY_CATEGORY, KEY_PRICE, KEY_QUANTITY, KEY_USER, KEY_TIMESTAMP, KEY_SKU },
-				KEY_ROWID + "=" + rowId, null, null, null, null, null);
-		if (mCursor != null) {
-			mCursor.moveToFirst();
-		}
-		return mCursor;
-	}
+		Cursor mCursor = database.query(
+			true, 
+            DATABASE_TABLE, 
+            new String[] {
+                KEY_ROWID, 
+                KEY_AREA, 
+                KEY_SECTION, 
+                KEY_DEPARTMENT, 
+                KEY_CATEGORY, 
+                KEY_PRICE, 
+                KEY_QUANTITY, 
+                KEY_USER, 
+                KEY_TIMESTAMP, 
+                KEY_SKU,
+                KEY_PREFIX,
+                KEY_SUFFIX
+            },
+            KEY_ROWID + "=" + rowId, 
+            null, null, null, null, null
+        );
 
-	private ContentValues createContentValues(String area, String section, String department, String category, String price, String quantity, String user, String timestamp, String sku) {
+        if (mCursor != null) {
+            mCursor.moveToFirst();
+        }
+
+        return mCursor;
+    }
+
+	private ContentValues createContentValues(
+        String area, 
+        String section, 
+        String department, 
+        String category, 
+        String price, 
+        String quantity, 
+        String user, 
+        String timestamp,
+        String sku,
+        String prefix,
+        String suffix
+    ) {
 		ContentValues values = new ContentValues();
+
 		values.put(KEY_AREA, area.replaceFirst("^0+(?!$)", "")); // make sure there are no leading zeros in database
 		values.put(KEY_SECTION, section.replaceFirst("^0+(?!$)", ""));
 		values.put(KEY_DEPARTMENT, department.replaceFirst("^0+(?!$)", ""));
@@ -96,6 +179,9 @@ public class LincDBAdapter {
 		values.put(KEY_USER, user.replaceFirst("^0+(?!$)", ""));
 		values.put(KEY_TIMESTAMP, timestamp);
 		values.put(KEY_SKU, sku);
+		values.put(KEY_PREFIX, prefix);
+		values.put(KEY_SUFFIX, suffix);
+
 		return values;
 	}
 }
