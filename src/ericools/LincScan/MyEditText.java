@@ -65,6 +65,7 @@ public class MyEditText extends EditText
     {
     	currentItem=new MyStockItem();	
     	myEditView.setCurrentMyStockItem(currentItem);
+
     	if (lastItem==null)
     	{
     		currentItem.setCurrentFieldNumber(0);
@@ -72,15 +73,26 @@ public class MyEditText extends EditText
     	}
     	else
     	{
-    		for (int i=0;i<2;++i)
-    		{
-    			// populate first three fields
-    			currentItem.setStockItemValue(i, lastItem.getStockItemValue(i));
+            // reserve these fields for next entry
+            int[] preservedFields = new int[] { 
+                MyStockItem.ENTRY_AREA, 
+                MyStockItem.ENTRY_SECTION, 
+                MyStockItem.ENTRY_DEPARTMENT, 
+                MyStockItem.ENTRY_PREFIX, 
+                MyStockItem.ENTRY_SUFFIX
+            };
+
+    		// populate reserved fields
+    		for (int i=0; i<preservedFields.length; i++) {
+                int key = preservedFields[i];
+    			currentItem.setStockItemValue(key, lastItem.getStockItemValue(key));
     		}
-    		myEditView.setActiveEditField(8);
+
+    		myEditView.setActiveEditField(MyStockItem.ENTRY_SKU);
     		myEditView.updateView();
-    		currentItem.setCurrentFieldNumber(8);
+    		currentItem.setCurrentFieldNumber(MyStockItem.ENTRY_SKU);
     	}
+
     	this.setText("");
     	editingItem=-1; // no item is edited
     	isNewItem=true;
