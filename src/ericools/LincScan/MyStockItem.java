@@ -338,4 +338,12 @@ public class MyStockItem {
         };
     }
 
+    // get a special version of sku
+    // with prefix and suffixed applied (if any)
+    public String getSkuPrefixedAndSuffixed() {
+        return getStockItemValue(MyStockItem.ENTRY_PREFIX) + 
+            getStockItemValue(MyStockItem.ENTRY_SKU) +
+            getStockItemValue(MyStockItem.ENTRY_SUFFIX);
+    }
+
 }

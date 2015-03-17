@@ -39,16 +39,26 @@ public class MyStockItemList {
 	private int currentSelection;
 	
 	private LincDBAdapter dbAdapter;
+    private int[] colsToShow = {
+        MyStockItem.ENTRY_AREA,
+        MyStockItem.ENTRY_SECTION,
+        MyStockItem.ENTRY_DEPARTMENT,
+        MyStockItem.ENTRY_PRICE,
+        MyStockItem.ENTRY_QUATITY,
+        MyStockItem.ENTRY_SKU
+    };
 	
 	public MyStockItemList(LincActivity act) {
 		mainActivity=act;
-		stockItems = new ArrayList < MyStockItem >();
-		allTableRows = new ArrayList < TableRow >();
+		stockItems = new ArrayList <MyStockItem>();
+		allTableRows = new ArrayList <TableRow>();
 	
 		tableLayout = new TableLayout(mainActivity);
-		tableLayout.setLayoutParams(new LayoutParams(
+		tableLayout.setLayoutParams(
+            new LayoutParams(
                 LayoutParams.FILL_PARENT,
-                LayoutParams.WRAP_CONTENT));
+                LayoutParams.WRAP_CONTENT)
+            );
 		tableLayout.setStretchAllColumns(true);
 		
 		
@@ -59,9 +69,7 @@ public class MyStockItemList {
 		dbAdapter = new LincDBAdapter(mainActivity);
 		dbAdapter.open();
 		
-		
 		createTableHeader();
-		
 		currentSelection=-1;
 	}
 	
@@ -83,9 +91,11 @@ public class MyStockItemList {
                   LayoutParams.FILL_PARENT,
                   LayoutParams.WRAP_CONTENT));
 		
-		for (int i=0;i<6;++i)
-		{
-			
+		for (int i=0; i<colsToShow.length; i++)
+		{ 
+            int key = colsToShow[i];
+            String colContent = MyStockItem.entryCaptions[key];
+
 			TextView tv = new TextView(mainActivity);
 			tv.setLayoutParams(new LayoutParams(
 	                LayoutParams.FILL_PARENT,
@@ -93,12 +103,10 @@ public class MyStockItemList {
 			tv.setGravity(Gravity.CENTER);
 			tv.setTextColor(Color.WHITE);
 			tv.setTextSize(15);
-			tv.setText(MyStockItem.entryCaptions[i]);
-			if (i!=3)
-			{
-				tr.addView(tv);
-			}
+			tv.setText(colContent);
+			tr.addView(tv);
 		}
+
 		TableRow tr2 = new TableRow(mainActivity);
 		tr2.setLayoutParams(new LayoutParams(
                   LayoutParams.FILL_PARENT,
@@ -239,9 +247,14 @@ public class MyStockItemList {
 			        	MyStockItem current=stockItems.get(i);
 			        	for (int j=0; j<9; ++j)
 			        	{
-			        		out.write(current.getStockItemValue(j));
-			        		if (j<8)
-			        		{
+                            // treat sku specially
+                            if(j==8) {
+			        		    out.write(current.getSkuPrefixedAndSuffixed());
+                            } else {
+			        		    out.write(current.getStockItemValue(j));
+                            }
+
+			        		if (j<8) {
 			        			out.write(",");
 			        		}
 			        	}
@@ -386,25 +399,30 @@ public class MyStockItemList {
 		tr.setLayoutParams(new LayoutParams(
                   LayoutParams.FILL_PARENT,
                   LayoutParams.WRAP_CONTENT));
-		for (int i=0;i<6;++i)
-		{
+
+        for(int i=0; i<colsToShow.length; i++) {
+
+            int key = colsToShow[i];
+            String colContent;
+
+            if(key==MyStockItem.ENTRY_SKU) {
+                colContent = item.getSkuPrefixedAndSuffixed(); 
+            } else {
+                colContent = item.getStockItemValue(key); 
+            }
+
 			TextView tv = new TextView(mainActivity);
 			tv.setLayoutParams(new LayoutParams(
 	                  LayoutParams.WRAP_CONTENT,
 	                  LayoutParams.WRAP_CONTENT));
 			tv.setGravity(Gravity.CENTER);
 			tv.setTextSize(15);
-			tv.setText(item.getStockItemValue(i));
-			if (i!=3)
-			{
-				tr.addView(tv);
-			}
+			tv.setText(colContent);
+			tr.addView(tv);
 		}
 		
 		allTableRows.add(tr);
-		
 		tableLayout.addView(tr);
-
 		selectNewPosition(allTableRows.size()-1);
 	}
 	
@@ -432,20 +450,27 @@ public class MyStockItemList {
 	}
 	
 	public void itemUpdated(int index) {
+		MyStockItem item=stockItems.get(index);
 		TableRow currentRow=allTableRows.get(index);
+
 		for (int i=0;i<currentRow.getChildCount();++i)
 		{
 			TextView currentView=(TextView)currentRow.getChildAt(i);
-			int textpos=i;
-			if (i>2) {textpos++;} // this is because of missing "Category"
-			currentView.setText(
-                stockItems.get(index).getStockItemValue(textpos)
-            );
+            int key = colsToShow[i];
+            String colContent;
+
+            if(key==MyStockItem.ENTRY_SKU) {
+                colContent = item.getSkuPrefixedAndSuffixed(); 
+            } else {
+                colContent = item.getStockItemValue(key);
+            }
+
+			currentView.setText(colContent);
 		}
+
 		Time timest = new Time();
 		timest.setToNow();
-		stockItems.get(index).setTimestamp(timest.format2445());
-		MyStockItem item=stockItems.get(index);
+        item.setTimestamp(timest.format2445());
 		
 		dbAdapter.updateEntry(
             item.dbId, 

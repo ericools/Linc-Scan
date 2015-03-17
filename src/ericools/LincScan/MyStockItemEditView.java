@@ -51,15 +51,11 @@ public class MyStockItemEditView {
 	public void updateView() {
 		for (int i=0;i<6;++i) {
 	    	fields.get(i).setText(currentItem.getStockItemValue(i));
-	    }
+	     }
 
 		// the sixth edit field is the SKU field (8)
         // sku has a special treatment of prefix/suffix
-        String skuWithPrefixAndSuffix = currentItem.getStockItemValue(MyStockItem.ENTRY_PREFIX) + 
-            currentItem.getStockItemValue(MyStockItem.ENTRY_SKU) +
-            currentItem.getStockItemValue(MyStockItem.ENTRY_SUFFIX);
-
-		fields.get(6).setText(skuWithPrefixAndSuffix);
+		fields.get(6).setText(currentItem.getSkuPrefixedAndSuffixed());
 	}
 	
 	public void setActiveEditField(int fieldno) {
