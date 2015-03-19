@@ -237,16 +237,22 @@ public class MyStockItem {
                     break;
 
 				case MyStockItem.ENTRY_SKU:
-					if (LincActivity.getAllowedSKUs().containsKey(input)) {
+                    // create a temp. sku with preifx/suffix applied for comparing
+                    String prefix = stockItemValues.get(MyStockItem.ENTRY_PREFIX);
+                    String suffix = stockItemValues.get(MyStockItem.ENTRY_SUFFIX);
+                    String inputWithPrefixAndSuffix = prefix + input + suffix;
+
+                    Log.d("MyStockItem::setCurrentField",
+                        "InputWithPrefixAndSuffix: " + inputWithPrefixAndSuffix + 
+                        " Does AllowedSKUs contains: " + LincActivity.getAllowedSKUs().containsKey(inputWithPrefixAndSuffix));
+                   
+                    // as we now have prefixes/suffixes... comparing plain
+                    // sku wont work... we need to compare sky with preifx/suffix applied
+					if (LincActivity.getAllowedSKUs().containsKey(inputWithPrefixAndSuffix)) {
 						stockItemValues.set(counter, input);
-						stockItemValues.set(
-                                MyStockItem.ENTRY_DEPARTMENT, 
-                                LincActivity.getAllowedSKUs().get(input).x.toString()
-                                );
-						stockItemValues.set(
-                                MyStockItem.ENTRY_PRICE, 
-                                LincActivity.getAllowedSKUs().get(input).y.toString()
-                                );
+                        SKUTuple skuTuple = LincActivity.getAllowedSKUs().get(inputWithPrefixAndSuffix);
+						stockItemValues.set( MyStockItem.ENTRY_DEPARTMENT, skuTuple.x.toString() );
+						stockItemValues.set( MyStockItem.ENTRY_PRICE, skuTuple.y.toString() );
 						selectNextField(); // skip one field more (price field)
 					} else {
 						if (override) {
