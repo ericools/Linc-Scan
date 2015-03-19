@@ -341,8 +341,8 @@ public class MyStockItem {
     // get a special version of sku
     // with prefix and suffixed applied (if any)
     public String getSkuPrefixedAndSuffixed() {
-        String prefix = getStockItemValue(MyStockItem.ENTRY_PREFIX).replaceAll("\"","");
-        String suffix = getStockItemValue(MyStockItem.ENTRY_SUFFIX).replaceAll("\"",""); 
+        String prefix = getStockItemValue(MyStockItem.ENTRY_PREFIX);
+        String suffix = getStockItemValue(MyStockItem.ENTRY_SUFFIX);
         String sku = getStockItemValue(MyStockItem.ENTRY_SKU);
         return  prefix + sku + suffix;
     }

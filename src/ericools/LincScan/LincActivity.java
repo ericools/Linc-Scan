@@ -271,11 +271,11 @@ public class LincActivity extends Activity {
                 		String departmentId = parts[0]; //Integer.parseInt(parts[0]);
                 		
                 		// get prefix
-                		prefix = parts[1];
+                		prefix = parts[1].replaceAll("\"",""); 
 
                 		// optional, get suffix
                 		if(parts.length >= 3) {
-                			suffix = parts[2];
+                			suffix = parts[2].replaceAll("\"",""); 
                 		}
                 		
                 		LincActivity.departmentPrefixSuffix.put(
